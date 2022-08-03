@@ -21,6 +21,16 @@ Choose the number of the option you want to do:
                 xmpp.connect()
                 xmpp.process(forever=False)
 
+            elif(mainMenu == 2):
+                jid = str(input("Email: "))
+                password = str(getpass.getpass("Password: "))
+                xmpp = Client(jid, password)
+                xmpp.connect()
+                xmpp.process(forever=False)
+                if(not xmpp.logged):
+                    print("Can't login, plese try again")	
+                    xmpp.disconnect()
+
             elif(mainMenu == 3):
                 print("You are always welcome !")
             else:
