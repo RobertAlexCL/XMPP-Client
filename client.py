@@ -1,7 +1,8 @@
 import slixmpp
 from slixmpp.xmlstream.asyncio import asyncio
+from aioconsole import ainput
 
-class Client(slixmpp.ClientXMPP):
+class Client(slixmpp.ClientXMPP): 
     
     def __init__(self, jid, password, login = True):
         slixmpp.ClientXMPP.__init__(self, jid, password)
@@ -14,6 +15,7 @@ class Client(slixmpp.ClientXMPP):
         if not login:
             self.add_event_handler("register", self.register)
         
+        self.add_event_handler("session_start", self.start)
 
         self.register_plugin('xep_0030') 
         self.register_plugin('xep_0004') 
@@ -29,6 +31,12 @@ class Client(slixmpp.ClientXMPP):
         self.register_plugin('xep_0128')
         self.register_plugin('xep_0363')
 
+    async def start(self, event):
+        self.send_presence(pstatus=self.use_status)
+        await self.get_roster()
+        
+        self.nickName = str(await ainput("Write a nickname: "))        
+        self.disconnect()
 
     async def register(self, iq):
         note = self.Iq()
