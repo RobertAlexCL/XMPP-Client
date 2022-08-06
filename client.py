@@ -1,5 +1,5 @@
 import slixmpp
-from slixmpp.xmlstream.asyncio import asyncio
+from slixmpp.xmlstream.asyncio import asyncio 
 from aioconsole import ainput
 
 class Client(slixmpp.ClientXMPP): 
@@ -9,6 +9,7 @@ class Client(slixmpp.ClientXMPP):
 
         self.is_logged = False
         self.nickName = ''
+        self.use_status = 'Active'
         self.use_recieved = set()
         self.use_recieved_presenses = asyncio.Event()
 
@@ -31,11 +32,48 @@ class Client(slixmpp.ClientXMPP):
         self.register_plugin('xep_0128')
         self.register_plugin('xep_0363')
 
+    async def removeUser(self):
+
+        resp = self.Iq()
+        resp['type'] = 'set'
+        resp['register']['remove'] = True
+
+        try:
+            await resp.send()
+            print("User succesfuly deleted!")
+        except:
+            print("User may not be deleted, try again")
+
     async def start(self, event):
         self.send_presence(pstatus=self.use_status)
         await self.get_roster()
         
         self.nickName = str(await ainput("Write a nickname: "))        
+        self.is_logged = True
+        second_menu = 0
+        
+        while second_menu != 7 and second_menu != 8:
+            try:
+                second_menu = int(await ainput(""" 
+
+Choose the number of the option you want to do:
+
+1. Delete my account
+
+>"""))
+            except: 
+                second_menu = 0
+                print("Choose a valid option")                
+      
+            self.send_presence(pstatus=self.use_status)
+            await self.get_roster()
+            
+            if(second_menu == 1):
+                await self.removeUser()
+            
+            elif(second_menu != 0):
+                print("Choose a valid option")
+        
         self.disconnect()
 
     async def register(self, iq):
