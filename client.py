@@ -1,6 +1,7 @@
 import slixmpp
 from slixmpp.xmlstream.asyncio import asyncio 
 from aioconsole import ainput
+from messages_manager import MessagesManager
 
 class Client(slixmpp.ClientXMPP): 
     
@@ -12,12 +13,13 @@ class Client(slixmpp.ClientXMPP):
         self.use_status = 'Active'
         self.use_recieved = set()
         self.use_recieved_presenses = asyncio.Event()
+        self.group_email = ''
 
         if not login:
             self.add_event_handler("register", self.register)
+            self.add_event_handler("session_start", self.start)
+            self.add_event_handler("changed_status", self.presensesWaiting)
         
-        self.add_event_handler("session_start", self.start)
-
         self.register_plugin('xep_0030') 
         self.register_plugin('xep_0004') 
         self.register_plugin('xep_0066') 
@@ -59,6 +61,8 @@ class Client(slixmpp.ClientXMPP):
 Choose the number of the option you want to do:
 
 1. Delete my account
+2. Send message to a user
+3. Send message to a group
 
 >"""))
             except: 
@@ -70,6 +74,12 @@ Choose the number of the option you want to do:
             
             if(second_menu == 1):
                 await self.removeUser()
+
+            elif(second_menu == 2):
+                await MessagesManager.dispatchMessage(self)
+            
+            elif(second_menu == 3):
+                await MessagesManager.determineGroupMessage(self)
             
             elif(second_menu != 0):
                 print("Choose a valid option")
