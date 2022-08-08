@@ -1,5 +1,5 @@
 import getpass
-from client import Client 
+from client import Client
 import logging
 
 debugging = True
@@ -43,7 +43,7 @@ Choose the number of the option you want to do:
                 xmpp.connect()
                 xmpp.process(forever=False)
                 if(not xmpp.logged):
-                    print("Can't login, plese try again")	
+                    print("Can't login, plese check your email")	
                     xmpp.disconnect()
 
             elif(mainMenu == 3):

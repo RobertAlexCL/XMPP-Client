@@ -106,3 +106,23 @@ Choose the number of the option you want to do:
             self.use_recieved_presenses.set()
         else:
             self.use_recieved_presenses.clear()
+
+    def message(self, note):
+        if note['type']  in ('normal', 'chat'):
+            print("----------------New Notification----------------------")
+            print(f"{note['from'].username}: {note['body']}")
+        
+        elif note['type'] == 'groupchat':
+            print("----------------New Notification----------------------")
+            print(f"Grupo ({note['from'].username}): {note['body']}")
+        else :
+            print(note)
+    
+    def groupMessage(self, note):
+        if(note['mucnick'] != self.nickName and self.nickName in note['body']):
+            print(f"Someone mentioned you in a group ({note['from'].username})")
+
+    def itsOnlineInGroup(self, presence):
+        if presence['muc']['nick'] != self.nickName:
+            print(f"{presence['muc']['nick']} it is online in group ({presence['from'].bare})")
+

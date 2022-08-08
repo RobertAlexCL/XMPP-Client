@@ -10,7 +10,7 @@ class MessagesManager:
             print("Message:")
             message = str(await ainput(">")) 
             
-            self.send_message(mto=foreign_contact,
+            self.send_message(mto=foreign_contact, 
                             mbody=message,
                             mtype='chat')
         except:
@@ -33,5 +33,12 @@ class MessagesManager:
                             mtype='groupchat')
         except:
             print('Can not send message, please try again') 
+
+    async def definePresenceMessage(self):
+
+        self.use_status = str(await ainput("Status: "))
+        
+        self.send_presence(pstatus=self.use_status, pnick=self.nickName)
+        await self.get_roster()
     
 
