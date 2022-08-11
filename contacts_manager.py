@@ -72,3 +72,15 @@ class ContactsManager:
 
             df = pd.DataFrame(connections, columns = ['Email', 'Name', 'Suscription', 'Status'])
             print(tabulate(df, headers='keys', tablefmt='psql'))
+
+    async def removeUser(self):
+
+        resp = self.Iq()
+        resp['type'] = 'set'
+        resp['register']['remove'] = True
+
+        try:
+            await resp.send()
+            print("User succesfuly deleted!")
+        except:
+            print("User may not be deleted, try again")

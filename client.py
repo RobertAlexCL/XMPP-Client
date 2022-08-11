@@ -1,25 +1,29 @@
 import slixmpp
-from slixmpp.xmlstream.asyncio import asyncio 
+from slixmpp.xmlstream.asyncio import asyncio
 from aioconsole import ainput
+from contacts_manager import ContactsManager
 from messages_manager import MessagesManager
 
-class Client(slixmpp.ClientXMPP): 
+class Client(slixmpp.ClientXMPP):
     
     def __init__(self, jid, password, login = True):
         slixmpp.ClientXMPP.__init__(self, jid, password)
 
         self.is_logged = False
         self.nickName = ''
+        self.group_email = ''
         self.use_status = 'Active'
         self.use_recieved = set()
         self.use_recieved_presenses = asyncio.Event()
-        self.group_email = ''
 
         if not login:
             self.add_event_handler("register", self.register)
-            self.add_event_handler("session_start", self.start)
-            self.add_event_handler("changed_status", self.presensesWaiting)
         
+        self.add_event_handler("session_start", self.start)
+        self.add_event_handler("changed_status", self.presensesWaiting)
+        self.add_event_handler("message", self.message)
+        self.add_event_handler("groupchat_message", self.groupMessage)
+
         self.register_plugin('xep_0030') 
         self.register_plugin('xep_0004') 
         self.register_plugin('xep_0066') 
@@ -34,23 +38,13 @@ class Client(slixmpp.ClientXMPP):
         self.register_plugin('xep_0128')
         self.register_plugin('xep_0363')
 
-    async def removeUser(self):
-
-        resp = self.Iq()
-        resp['type'] = 'set'
-        resp['register']['remove'] = True
-
-        try:
-            await resp.send()
-            print("User succesfuly deleted!")
-        except:
-            print("User may not be deleted, try again")
 
     async def start(self, event):
         self.send_presence(pstatus=self.use_status)
         await self.get_roster()
         
-        self.nickName = str(await ainput("Write a nickname: "))        
+        self.nickName = str(await ainput("Write a nickname: "))
+
         self.is_logged = True
         second_menu = 0
         
@@ -59,10 +53,14 @@ class Client(slixmpp.ClientXMPP):
                 second_menu = int(await ainput(""" 
 
 Choose the number of the option you want to do:
-
-1. Delete my account
-2. Send message to a user
-3. Send message to a group
+1. Show all contacts and status
+2. Add a new contact
+3. Show contact details
+4. Send a direct message
+5. Send a message to a group
+6. Change your status
+7. Logout
+8. Delete my account
 
 >"""))
             except: 
@@ -73,13 +71,28 @@ Choose the number of the option you want to do:
             await self.get_roster()
             
             if(second_menu == 1):
-                await self.removeUser()
+                await ContactsManager.contactsList(self)
 
             elif(second_menu == 2):
-                await MessagesManager.dispatchMessage(self)
+                await ContactsManager.newContact(self)
             
             elif(second_menu == 3):
+                await ContactsManager.contactInformation(self)
+            
+            elif(second_menu == 4):
+                await MessagesManager.dispatchMessage(self)
+            
+            elif(second_menu == 5):
                 await MessagesManager.determineGroupMessage(self)
+            
+            elif(second_menu == 6):
+                await MessagesManager.definePresenceMessage(self)
+            
+            elif(second_menu == 7):
+                print("Login out...")
+            
+            elif(second_menu == 8):
+                await ContactsManager.removeUser(self)
             
             elif(second_menu != 0):
                 print("Choose a valid option")
@@ -117,6 +130,7 @@ Choose the number of the option you want to do:
             print(f"Grupo ({note['from'].username}): {note['body']}")
         else :
             print(note)
+            
     
     def groupMessage(self, note):
         if(note['mucnick'] != self.nickName and self.nickName in note['body']):
@@ -125,4 +139,3 @@ Choose the number of the option you want to do:
     def itsOnlineInGroup(self, presence):
         if presence['muc']['nick'] != self.nickName:
             print(f"{presence['muc']['nick']} it is online in group ({presence['from'].bare})")
-

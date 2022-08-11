@@ -2,7 +2,7 @@ import getpass
 from client import Client
 import logging
 
-debugging = True
+debugging = False
 
 if __name__ == '__main__':
     if debugging:
