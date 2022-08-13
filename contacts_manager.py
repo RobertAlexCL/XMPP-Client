@@ -3,11 +3,18 @@ from slixmpp.xmlstream.asyncio import asyncio
 from tabulate import tabulate
 import pandas as pd
 
+"""
+Roberto Castillo - 18546
+
+Contacts manager class for the XMPP client
+
+>"""
+
 doze = 3
 
 class ContactsManager:
 
-
+    # Function to print the list of contacts
     async def contactsList(self):
 
         connections = []
@@ -35,7 +42,7 @@ class ContactsManager:
             df = pd.DataFrame(connections, columns = ['Email', 'Status'])
             print(tabulate(df, headers='keys', tablefmt='psql'))
     
-    
+    # Function to add a new contact
     async def newContact(self):
         try:
             addContact = str(await ainput("Email: "))
@@ -44,6 +51,7 @@ class ContactsManager:
         except:
             print('Something happened adding the user, try again')
     
+    # Get the information of a single contact
     async def contactInformation(self):
 
         contact = str(await ainput("Email: "))
@@ -73,6 +81,7 @@ class ContactsManager:
             df = pd.DataFrame(connections, columns = ['Email', 'Name', 'Suscription', 'Status'])
             print(tabulate(df, headers='keys', tablefmt='psql'))
 
+    # Remove the own user of the client
     async def removeUser(self):
 
         resp = self.Iq()

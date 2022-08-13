@@ -4,8 +4,16 @@ from aioconsole import ainput
 from contacts_manager import ContactsManager
 from messages_manager import MessagesManager
 
+"""
+Roberto Castillo - 18546
+
+Client class 
+
+>"""
+
 class Client(slixmpp.ClientXMPP):
     
+    # Constructor of the class starting the client
     def __init__(self, jid, password, login = True):
         slixmpp.ClientXMPP.__init__(self, jid, password)
 
@@ -19,11 +27,13 @@ class Client(slixmpp.ClientXMPP):
         if not login:
             self.add_event_handler("register", self.register)
         
+        # Event handler for some important functions
         self.add_event_handler("session_start", self.start)
         self.add_event_handler("changed_status", self.presensesWaiting)
         self.add_event_handler("message", self.message)
         self.add_event_handler("groupchat_message", self.groupMessage)
 
+        #Setting all necessary plugins
         self.register_plugin('xep_0030') 
         self.register_plugin('xep_0004') 
         self.register_plugin('xep_0066') 
@@ -38,7 +48,7 @@ class Client(slixmpp.ClientXMPP):
         self.register_plugin('xep_0128')
         self.register_plugin('xep_0363')
 
-
+    # Function to the second menu in the application
     async def start(self, event):
         self.send_presence(pstatus=self.use_status)
         await self.get_roster()
@@ -69,7 +79,8 @@ Choose the number of the option you want to do:
       
             self.send_presence(pstatus=self.use_status)
             await self.get_roster()
-            
+
+            # Dependind on the option selected, the function will be called from its own class
             if(second_menu == 1):
                 await ContactsManager.contactsList(self)
 
@@ -99,6 +110,7 @@ Choose the number of the option you want to do:
         
         self.disconnect()
 
+    # Function to register a new user
     async def register(self, iq):
         note = self.Iq()
         note['type'] = 'set'
@@ -112,6 +124,7 @@ Choose the number of the option you want to do:
             print("Something happened creating your account, try changing your email")
             self.disconnect()
 
+    # Function to manage presences
     def presensesWaiting(self, pres):
 
         self.use_recieved.add(pres['from'].bare)
@@ -120,6 +133,7 @@ Choose the number of the option you want to do:
         else:
             self.use_recieved_presenses.clear()
 
+    # Function to recieve messages, if the message is from a group, it will be printed in the group, if not, it will be printed as a direct message
     def message(self, note):
         if note['type']  in ('normal', 'chat'):
             print("----------------New Notification----------------------")
@@ -131,11 +145,12 @@ Choose the number of the option you want to do:
         else :
             print(note)
             
-    
+    # Notifications for mentions in group messages
     def groupMessage(self, note):
         if(note['mucnick'] != self.nickName and self.nickName in note['body']):
             print(f"Someone mentioned you in a group ({note['from'].username})")
 
+    # Function to know if the user is logged in or not in a group
     def itsOnlineInGroup(self, presence):
         if presence['muc']['nick'] != self.nickName:
             print(f"{presence['muc']['nick']} it is online in group ({presence['from'].bare})")
